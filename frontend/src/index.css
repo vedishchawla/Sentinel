@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 5.5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 5.5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 142 70% 50%;
+    --primary-foreground: 240 10% 3.9%;
+
+    --secondary: 240 5% 12%;
+    --secondary-foreground: 0 0% 85%;
+
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 5%;
+
+    --success: 142 70% 50%;
+    --success-foreground: 240 10% 3.9%;
+
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 142 70% 50%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 142 70% 50%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 15%;
+    --sidebar-ring: 142 70% 50%;
+
+    /* Custom tokens */
+    --glow-green: 0 0 15px rgba(34, 197, 94, 0.3);
+    --glow-green-strong: 0 0 25px rgba(34, 197, 94, 0.4);
+    --surface-elevated: 240 10% 7%;
+    --surface-overlay: 240 10% 9%;
+    --code-add-bg: 142 70% 50%;
+    --code-remove-bg: 0 62% 50%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+}
+
+@layer utilities {
+  .glow-green {
+    box-shadow: var(--glow-green);
+  }
+  .glow-green-strong {
+    box-shadow: var(--glow-green-strong);
+  }
+  .surface-elevated {
+    background-color: hsl(var(--surface-elevated));
+  }
+  .surface-overlay {
+    background-color: hsl(var(--surface-overlay));
+  }
+  .inner-glow {
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 1px 2px 0 rgba(0,0,0,0.3);
+  }
+
+  /* Rezinix-ported utilities */
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.2);
+  }
+
+  .border-glow {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 0 20px hsl(var(--primary) / 0.1);
+  }
+
+  .surface-card {
+    @apply bg-card border border-border;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 10px 15px -3px rgba(0,0,0,0.5);
+  }
+
+  .tracking-display {
+    letter-spacing: -0.05em;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .terminal-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .terminal-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .terminal-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(240 5% 20%);
+    border-radius: 3px;
+  }
+}
+
+/* Top progress bar animation */
+@keyframes pipeline-progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes terminal-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-cursor {
+  animation: terminal-cursor 1s step-end infinite;
+}
