@@ -87,7 +87,7 @@ frontend/
 
 ## Team
 
-**Team Name:** Paglus
+**Team Name:** Code Paglus
 
 ---
 
