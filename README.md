@@ -14,8 +14,8 @@
 
 ## 🔗 Links
 
-- **PPT:** [View Presentation](PASTE_PPT_LINK_HERE)
-- **Video Demo:** [Watch Video](PASTE_VIDEO_LINK_HERE)
+- **PPT:** [View Presentation](https://www.canva.com/design/DAHD6M28dcg/3vJFaGACt_xKDyxK6zZGxg/view?utm_content=DAHD6M28dcg&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hd7ac8d0fb8#5)
+- **Video Demo:** [Watch Video](https://drive.google.com/drive/folders/1ihRW4JDAQTczC1Ys7tkFCm0hVrAKmpvB)
 
 ---
 
