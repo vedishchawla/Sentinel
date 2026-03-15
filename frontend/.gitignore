@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+package-lock.json
+bun.lock
+bun.lockb
+Syrus2026_Code_Paglus
+public/
+playwright-fixture.ts
+playwright.config.ts
