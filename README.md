@@ -1,5 +1,7 @@
 # Sentinel — Autonomous Incident-to-Fix Engineering Agent
 
+**Team:** Code Paglus | **Hackathon:** Syrus 2026
+
 ## Problem Statement & Track
 
 **Track:** Track 1 — Agentic AI [Rezinix AI]
@@ -85,11 +87,3 @@ frontend/
 ```
 
 ---
-
-## Team
-
-**Team Name:** Code Paglus
-
----
-
-*Built for Syrus 2026 Hackathon*
