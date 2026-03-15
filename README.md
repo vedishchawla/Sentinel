@@ -87,3 +87,15 @@ frontend/
 ```
 
 ---
+
+
+## ✨ Key Highlights
+
+- **Fully Autonomous** — No human intervention required from ticket to PR
+- **Transparent Reasoning** — Every agent decision is visible in the Reasoning Panel
+- **Safe by Design** — Minimal patches, Docker-sandboxed validation, regression-free
+- **Production-Ready Output** — Clean PRs with commit messages, test files, and resolution reports
+
+---
+
+*Built with ❤️ by Team Code Paglus for Syrus 2026 Hackathon*
