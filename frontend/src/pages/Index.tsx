@@ -1,0 +1,145 @@
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '@/components/Header';
+import { PipelineStepper } from '@/components/PipelineStepper';
+import { IncidentInput } from '@/components/IncidentInput';
+import { CodeAnalysisPanel } from '@/components/CodeAnalysisPanel';
+import { DiffViewer } from '@/components/DiffViewer';
+import { TestPanel } from '@/components/TestPanel';
+import { TerminalPanel } from '@/components/TerminalPanel';
+import { PullRequestView } from '@/components/PullRequestView';
+import { ResolutionReport } from '@/components/ResolutionReport';
+import { ReasoningPanel } from '@/components/ReasoningPanel';
+import { useAgentWorkflow } from '@/hooks/useAgentWorkflow';
+import { RotateCcw, History } from 'lucide-react';
+
+const PANEL_TITLES: Record<string, string> = {
+  dashboard: 'Incident Dashboard',
+  'code-analysis': 'Code Analysis',
+  diff: 'Fix Generation',
+  tests: 'Test Generation',
+  terminal: 'Sandbox Execution',
+  pr: 'Pull Request',
+  report: 'Resolution Report',
+};
+
+const PANEL_TABS = [
+  { id: 'dashboard', label: 'Input' },
+  { id: 'code-analysis', label: 'Analysis' },
+  { id: 'diff', label: 'Diff' },
+  { id: 'tests', label: 'Tests' },
+  { id: 'terminal', label: 'Terminal' },
+  { id: 'pr', label: 'PR' },
+  { id: 'report', label: 'Report' },
+];
+
+const transition = { type: 'tween' as const, ease: [0.2, 0, 0, 1] as [number, number, number, number], duration: 0.2 };
+
+const Index = () => {
+  const { steps, terminalLines, isRunning, activePanel, setActivePanel, progress, runWorkflow, reset } = useAgentWorkflow();
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header progress={progress} isRunning={isRunning} />
+
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Pipeline Sidebar */}
+        <PipelineStepper steps={steps} activePanel={activePanel} onPanelChange={setActivePanel} />
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Tab Bar */}
+          <div className="flex items-center gap-1 px-4 py-2 border-b border-border overflow-x-auto">
+            {PANEL_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActivePanel(tab.id)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-150 shrink-0 ${
+                  activePanel === tab.id
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+            
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => navigate('/incidents')}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+              >
+                <History className="h-3 w-3" />
+                History
+              </button>
+              {(isRunning || steps.some(s => s.status === 'completed')) && (
+                <button
+                  onClick={reset}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Panel + Reasoning split */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Panel Content */}
+            <div className="flex-1 overflow-auto p-4 lg:p-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePanel}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={transition}
+                >
+                  <div className="mb-4">
+                    <h2 className="text-sm font-semibold text-foreground">{PANEL_TITLES[activePanel]}</h2>
+                  </div>
+
+                  {activePanel === 'dashboard' && (
+                    <IncidentInput onRun={runWorkflow} isRunning={isRunning} />
+                  )}
+                  {activePanel === 'code-analysis' && <CodeAnalysisPanel />}
+                  {activePanel === 'diff' && <DiffViewer />}
+                  {activePanel === 'tests' && <TestPanel />}
+                  {activePanel === 'terminal' && (
+                    <TerminalPanel lines={terminalLines} isRunning={isRunning} />
+                  )}
+                  {activePanel === 'pr' && <PullRequestView />}
+                  {activePanel === 'report' && <ResolutionReport />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Reasoning Panel (right side) */}
+            <div className="hidden xl:block w-72 border-l border-border shrink-0">
+              <ReasoningPanel steps={steps} isRunning={isRunning} />
+            </div>
+          </div>
+
+          {/* Bottom Terminal (always visible when running) */}
+          {isRunning && activePanel !== 'terminal' && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={transition}
+              className="border-t border-border"
+            >
+              <div className="h-[160px]">
+                <TerminalPanel lines={terminalLines.slice(-8)} isRunning={isRunning} />
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Index;
