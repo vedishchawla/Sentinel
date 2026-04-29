@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Play, ChevronDown } from 'lucide-react';
+import { AlertTriangle, Play, ChevronDown, Github, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SampleIncident {
@@ -12,37 +12,37 @@ interface SampleIncident {
 
 const SAMPLE_INCIDENTS: SampleIncident[] = [
   {
-    id: 'ISSUE-402',
-    title: 'Memory leak in auth middleware',
-    repo: 'acme/backend',
+    id: 'DEMO-001',
+    title: 'Memory leak in authentication middleware',
+    repo: 'https://github.com/Rezinix-AI/shopstack-platform',
     severity: 'P1',
-    description: 'Event listeners are not cleaned up when WebSocket connections disconnect, causing memory to grow unbounded in production. Server OOM kills after ~6 hours under load.',
+    description: 'Event listeners are not cleaned up when WebSocket connections disconnect in the auth middleware, causing memory to grow unbounded in production. Server OOM kills after ~6 hours under load. Stack trace points to handleConnection() in src/lib/auth/middleware.ts.',
   },
   {
-    id: 'ISSUE-389',
+    id: 'DEMO-002',
     title: 'Race condition in payment processing',
-    repo: 'acme/billing',
+    repo: 'https://github.com/Rezinix-AI/shopstack-platform',
     severity: 'P0',
-    description: 'Concurrent requests to /api/charge can result in double-charging customers. Mutex lock not properly acquired in handlePayment().',
+    description: 'Concurrent requests to /api/charge can result in double-charging customers. The mutex lock is not properly acquired in handlePayment() before accessing the shared transaction state.',
   },
   {
-    id: 'ISSUE-415',
-    title: 'SQL injection in search endpoint',
-    repo: 'acme/api',
-    severity: 'P0',
-    description: 'User input in /api/search is interpolated directly into SQL query without parameterization. Discovered during penetration testing.',
+    id: 'DEMO-003',
+    title: 'Unhandled null reference in cart checkout',
+    repo: 'https://github.com/Rezinix-AI/shopstack-platform',
+    severity: 'P1',
+    description: 'NullPointerException in ShopService.getCart() when user has no active cart. The checkout endpoint does not validate cart existence before processing, causing 500 errors for new users.',
   },
 ];
 
 interface IncidentInputProps {
-  onRun: () => void;
+  onRun: (description: string, repoUrl: string, environment: string) => void;
   isRunning: boolean;
 }
 
 export function IncidentInput({ onRun, isRunning }: IncidentInputProps) {
   const [ticket, setTicket] = useState('');
-  const [repo, setRepo] = useState('acme/backend');
-  const [env, setEnv] = useState('staging');
+  const [repo, setRepo] = useState('');
+  const [env, setEnv] = useState('production');
   const [showSamples, setShowSamples] = useState(false);
 
   const loadSample = (sample: SampleIncident) => {
@@ -51,11 +51,20 @@ export function IncidentInput({ onRun, isRunning }: IncidentInputProps) {
     setShowSamples(false);
   };
 
+  const handleRun = () => {
+    if (!ticket.trim() || !repo.trim()) return;
+    onRun(ticket, repo, env);
+  };
+
+  const isRepoValid = repo.trim().length > 0 && (
+    repo.includes('github.com') || repo.includes('/')
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-foreground tracking-tight mb-1">New Incident</h2>
-        <p className="text-sm text-muted-foreground">Paste a ticket URL, issue key, or describe the incident</p>
+        <p className="text-sm text-muted-foreground">Paste a ticket URL, issue key, or describe the incident in natural language</p>
       </div>
 
       {/* Input Area */}
@@ -67,29 +76,31 @@ export function IncidentInput({ onRun, isRunning }: IncidentInputProps) {
           <textarea
             value={ticket}
             onChange={(e) => setTicket(e.target.value)}
-            placeholder="Paste GitHub issue URL, Jira key, or raw error logs..."
+            placeholder="Describe the bug, paste error logs, stack traces, or a GitHub issue URL..."
             className="w-full h-32 bg-secondary border border-border rounded-lg p-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none font-mono text-xs"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">
-              Repository
+              <span className="flex items-center gap-1.5">
+                <Github className="h-3 w-3" />
+                Repository URL
+              </span>
             </label>
-            <div className="relative">
-              <select
-                value={repo}
-                onChange={(e) => setRepo(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground appearance-none focus:outline-none focus:ring-1 focus:ring-primary/50"
-              >
-                <option value="acme/backend">acme/backend</option>
-                <option value="acme/billing">acme/billing</option>
-                <option value="acme/api">acme/api</option>
-                <option value="acme/frontend">acme/frontend</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-            </div>
+            <input
+              type="text"
+              value={repo}
+              onChange={(e) => setRepo(e.target.value)}
+              placeholder="https://github.com/owner/repo"
+              className={`w-full bg-secondary border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50 font-mono ${
+                repo && !isRepoValid ? 'border-destructive' : 'border-border'
+              }`}
+            />
+            {repo && !isRepoValid && (
+              <span className="text-[10px] text-destructive mt-1 block">Enter a valid GitHub URL (https://github.com/owner/repo)</span>
+            )}
           </div>
 
           <div>
@@ -112,8 +123,8 @@ export function IncidentInput({ onRun, isRunning }: IncidentInputProps) {
         </div>
 
         <motion.button
-          onClick={onRun}
-          disabled={isRunning || !ticket.trim()}
+          onClick={handleRun}
+          disabled={isRunning || !ticket.trim() || !isRepoValid}
           whileTap={{ scale: 0.98 }}
           className="w-full bg-primary text-primary-foreground font-medium text-sm py-3 rounded-lg inner-glow disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-opacity duration-150"
         >
@@ -153,9 +164,18 @@ export function IncidentInput({ onRun, isRunning }: IncidentInputProps) {
                     {sample.severity}
                   </span>
                   <span className="text-xs font-mono text-muted-foreground">{sample.id}</span>
+                  <a
+                    href={sample.repo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-auto text-muted-foreground hover:text-foreground"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 </div>
                 <p className="text-sm text-foreground font-medium">{sample.title}</p>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{sample.description}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{sample.description}</p>
               </button>
             ))}
           </motion.div>
