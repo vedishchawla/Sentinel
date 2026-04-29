@@ -14,13 +14,23 @@ class Settings(BaseSettings):
 
     # --- LLM Configuration ---
     llm_provider: str = Field(
-        default="openai",
-        description="LLM provider: 'openai', 'anthropic', or 'ollama'"
+        default="groq",
+        description="LLM provider: 'groq' (default/free), 'openai', 'anthropic', or 'ollama'"
     )
+
+    # Groq (default — free, fast LPU inference)
+    groq_api_key: Optional[str] = Field(default=None)
+    groq_model: str = Field(default="llama-3.3-70b-versatile")
+
+    # OpenAI (optional)
     openai_api_key: Optional[str] = Field(default=None)
     openai_model: str = Field(default="gpt-4o")
+
+    # Anthropic (optional)
     anthropic_api_key: Optional[str] = Field(default=None)
     anthropic_model: str = Field(default="claude-sonnet-4-20250514")
+
+    # Ollama (optional, local)
     ollama_base_url: str = Field(default="http://localhost:11434")
     ollama_model: str = Field(default="llama3.1")
 
@@ -28,8 +38,9 @@ class Settings(BaseSettings):
     github_token: Optional[str] = Field(default=None)
 
     # --- Docker Sandbox ---
-    sandbox_enabled: bool = Field(default=False)
+    sandbox_enabled: bool = Field(default=True)
     sandbox_timeout: int = Field(default=120, description="Sandbox timeout in seconds")
+    sandbox_image: str = Field(default="node:20-alpine", description="Docker image for sandbox")
 
     # --- Storage ---
     db_path: str = Field(default="sentinel.db")
@@ -51,7 +62,17 @@ class Settings(BaseSettings):
 
     def get_llm(self):
         """Get the configured LLM instance."""
-        if self.llm_provider == "openai":
+        if self.llm_provider == "groq":
+            if not self.groq_api_key:
+                raise ValueError("SENTINEL_GROQ_API_KEY is required when using Groq provider")
+            from langchain_groq import ChatGroq
+            return ChatGroq(
+                model=self.groq_model,
+                api_key=self.groq_api_key,
+                temperature=0.1,
+                max_tokens=4096,
+            )
+        elif self.llm_provider == "openai":
             if not self.openai_api_key:
                 raise ValueError("SENTINEL_OPENAI_API_KEY is required when using OpenAI provider")
             from langchain_openai import ChatOpenAI
