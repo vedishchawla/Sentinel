@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -11,7 +12,8 @@ import { PullRequestView } from '@/components/PullRequestView';
 import { ResolutionReport } from '@/components/ResolutionReport';
 import { ReasoningPanel } from '@/components/ReasoningPanel';
 import { useAgentWorkflow } from '@/hooks/useAgentWorkflow';
-import { RotateCcw, History, Settings, AlertCircle } from 'lucide-react';
+import { fetchHealth } from '@/lib/api';
+import { RotateCcw, History, Settings, AlertCircle, WifiOff } from 'lucide-react';
 
 const PANEL_TITLES: Record<string, string> = {
   dashboard: 'Incident Dashboard',
@@ -42,6 +44,13 @@ const Index = () => {
     error, wsStatus, runWorkflow, reset,
   } = useAgentWorkflow();
   const navigate = useNavigate();
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetchHealth()
+      .then(() => setBackendOnline(true))
+      .catch(() => setBackendOnline(false));
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -58,6 +67,15 @@ const Index = () => {
           <span className="text-xs text-destructive">{error}</span>
           <button onClick={reset} className="ml-auto text-xs text-destructive underline">Reset</button>
         </motion.div>
+      )}
+
+      {/* Backend Offline Banner */}
+      {backendOnline === false && !isRunning && (
+        <div className="px-4 py-3 bg-warning/5 border-b border-warning/20 flex items-center gap-2">
+          <WifiOff className="h-4 w-4 text-warning shrink-0" />
+          <span className="text-xs text-warning">Backend not connected. Start it with: <code className="font-mono bg-warning/10 px-1.5 py-0.5 rounded">cd backend && python main.py</code></span>
+          <button onClick={() => navigate('/settings')} className="ml-auto text-xs text-warning underline shrink-0">Settings</button>
+        </div>
       )}
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
