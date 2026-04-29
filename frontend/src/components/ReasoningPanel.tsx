@@ -1,118 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronRight, Loader2 } from 'lucide-react';
 import type { PipelineStep } from '@/hooks/useAgentWorkflow';
-
-interface ReasoningEntry {
-  stepId: string;
-  thoughts: string[];
-}
-
-const REASONING_DATA: ReasoningEntry[] = [
-  {
-    stepId: 'understanding',
-    thoughts: [
-      'Parsing ticket ISSUE-402 metadata...',
-      'Detected error type: Memory Leak',
-      'Component identified: auth middleware',
-      'Priority: P1 | Severity: High',
-      'Extracted stack trace from description',
-    ],
-  },
-  {
-    stepId: 'analysis',
-    thoughts: [
-      'Scanning acme/backend repository...',
-      'Building dependency graph for auth module',
-      'Analyzing src/lib/auth/middleware.ts',
-      'Found event listener patterns in handleConnection()',
-      'Call graph: middleware.ts → session.ts → cache.ts',
-    ],
-  },
-  {
-    stepId: 'root_cause',
-    thoughts: [
-      'Analyzing control flow in handleConnection()',
-      'Detected: WebSocket "message" listener registered on connect',
-      'Detected: EventEmitter "auth:refresh" listener registered',
-      'Neither cleaned up on socket close/error',
-      'Root cause: Missing cleanup in event handlers at line 47',
-      'Confidence: 94.2%',
-    ],
-  },
-  {
-    stepId: 'generation',
-    thoughts: [
-      'Strategy: minimal-patch (lowest risk)',
-      'Candidate 1: Add cleanup function to disconnect handler',
-      'Candidate 2: Refactor to AbortController pattern',
-      'Selected: Candidate 1 — minimal change, zero structural risk',
-      'Patch: +8 lines, -2 lines across 2 files',
-    ],
-  },
-  {
-    stepId: 'testing',
-    thoughts: [
-      'Generating unit tests for middleware.ts',
-      'Test: should cleanup listeners on unmount',
-      'Test: should not leak memory on rapid reconnect',
-      'Test: should handle concurrent sessions',
-      'Test: should abort pending requests on cleanup',
-      'Generated 4 unit + 2 integration tests',
-    ],
-  },
-  {
-    stepId: 'sandbox',
-    thoughts: [
-      'Spinning up isolated Docker container...',
-      'Installing dependencies (4.2s)',
-      'Running test suite with fix applied',
-      'All 6 new tests passing',
-      'Coverage: 94.7% statements, 91.2% branches',
-    ],
-  },
-  {
-    stepId: 'validation',
-    thoughts: [
-      'Type checker: No errors',
-      'Linter: No warnings',
-      'Full test suite: 847/847 passed',
-      'Memory profile: No leaks in 10min soak test',
-      'Validation complete — fix is safe',
-    ],
-  },
-  {
-    stepId: 'pr',
-    thoughts: [
-      'Creating branch: fix/ISSUE-402-memory-leak-auth',
-      'Committing changes: 2 files, +8 -2',
-      'Opening PR #1847 against main',
-      'PR created successfully',
-    ],
-  },
-];
+import type { ReasoningEntry } from '@/hooks/useAgentWorkflow';
 
 interface ReasoningPanelProps {
   steps: PipelineStep[];
   isRunning: boolean;
+  entries: ReasoningEntry[];
 }
 
-export function ReasoningPanel({ steps, isRunning }: ReasoningPanelProps) {
-  const [visibleThoughts, setVisibleThoughts] = useState<Record<string, string[]>>({});
+export function ReasoningPanel({ steps, isRunning, entries }: ReasoningPanelProps) {
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
-  useEffect(() => {
-    const completedOrRunning = steps.filter(s => s.status === 'completed' || s.status === 'running');
-    const newThoughts: Record<string, string[]> = {};
-    
-    for (const step of completedOrRunning) {
-      const data = REASONING_DATA.find(r => r.stepId === step.id);
-      if (data) {
-        newThoughts[step.id] = step.status === 'completed' ? data.thoughts : data.thoughts.slice(0, -1);
-      }
+  // Group entries by step
+  const groupedEntries = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    for (const entry of entries) {
+      if (!groups[entry.stepId]) groups[entry.stepId] = [];
+      groups[entry.stepId].push(entry.thought);
     }
-    setVisibleThoughts(newThoughts);
+    return groups;
+  }, [entries]);
 
+  // Auto-expand the currently running step
+  useEffect(() => {
     const running = steps.find(s => s.status === 'running');
     if (running) setExpandedStep(running.id);
   }, [steps]);
@@ -144,7 +56,7 @@ export function ReasoningPanel({ steps, isRunning }: ReasoningPanelProps) {
       </div>
       <div className="flex-1 overflow-auto p-2 space-y-1 terminal-scrollbar">
         {activeSteps.map((step) => {
-          const thoughts = visibleThoughts[step.id] || [];
+          const thoughts = groupedEntries[step.id] || [];
           const isExpanded = expandedStep === step.id;
           const isActive = step.status === 'running';
 
@@ -159,6 +71,9 @@ export function ReasoningPanel({ steps, isRunning }: ReasoningPanelProps) {
                 <ChevronRight className={`h-3 w-3 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                 <span className="font-medium truncate">{step.label}</span>
                 {isActive && <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse ml-auto shrink-0" />}
+                {thoughts.length > 0 && !isActive && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">{thoughts.length}</span>
+                )}
               </button>
               
               <AnimatePresence>
