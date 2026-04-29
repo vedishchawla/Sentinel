@@ -13,7 +13,7 @@ const CODE_WINDOWS = [
   { name: "package.json", content: '"sharp": "^0.32.1"  // native build failed' },
   { name: "redis.log", content: "CLUSTERDOWN The cluster is down" },
   { name: ".env.prod", content: "DATABASE_URL=postgres://...  # CONNECTION_REFUSED" },
-  { name: "grafana-alert", content: "🔴 P95 Latency > 2000ms for 5 minutes" },
+  { name: "grafana-alert", content: "[CRITICAL] P95 Latency > 2000ms for 5 minutes" },
 ];
 
 export const SceneStruggle = () => {

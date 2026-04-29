@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
-import { ArrowLeft, Save, Check, AlertCircle, Loader2, Key, Github, Box, Cpu } from 'lucide-react';
+import { ArrowLeft, Save, Check, AlertCircle, Loader2, Key, Github, Box, Cpu, Zap, Brain, Sparkles, Monitor } from 'lucide-react';
 import { fetchSettings, updateSettings, fetchHealth, type AppSettings, type HealthStatus } from '@/lib/api';
 
 const LLM_PROVIDERS = [
-  { id: 'groq', label: 'Groq (Free)', desc: 'Llama 3.3 70B via Groq LPU — fast & free', icon: '⚡' },
-  { id: 'openai', label: 'OpenAI', desc: 'GPT-4o — highest quality, paid', icon: '🧠' },
-  { id: 'anthropic', label: 'Anthropic', desc: 'Claude Sonnet — great for code, paid', icon: '🔮' },
-  { id: 'ollama', label: 'Ollama (Local)', desc: 'Run locally — free, no API key needed', icon: '💻' },
+  { id: 'groq', label: 'Groq (Free)', desc: 'Llama 3.3 70B via Groq LPU — fast & free', Icon: Zap },
+  { id: 'openai', label: 'OpenAI', desc: 'GPT-4o — highest quality, paid', Icon: Brain },
+  { id: 'anthropic', label: 'Anthropic', desc: 'Claude Sonnet — great for code, paid', Icon: Sparkles },
+  { id: 'ollama', label: 'Ollama (Local)', desc: 'Run locally — free, no API key needed', Icon: Monitor },
 ];
 
 export default function SettingsPage() {
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-medium text-foreground">LLM</span>
               </div>
               <span className={`text-[10px] mt-1 block ${health.llm_configured ? 'text-primary' : 'text-destructive'}`}>
-                {health.llm_configured ? `${health.llm_provider} ✓` : 'Not configured'}
+                {health.llm_configured ? <span className="flex items-center gap-1">{health.llm_provider} <Check className="h-2.5 w-2.5" /></span> : 'Not configured'}
               </span>
             </div>
             <div className={`p-3 rounded-lg border ${health.github_configured ? 'border-primary/30 bg-primary/5' : 'border-border bg-secondary/30'}`}>
@@ -102,7 +102,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-medium text-foreground">GitHub</span>
               </div>
               <span className={`text-[10px] mt-1 block ${health.github_configured ? 'text-primary' : 'text-muted-foreground'}`}>
-                {health.github_configured ? 'Connected ✓' : 'Optional'}
+                {health.github_configured ? <span className="flex items-center gap-1">Connected <Check className="h-2.5 w-2.5" /></span> : 'Optional'}
               </span>
             </div>
             <div className={`p-3 rounded-lg border ${health.sandbox_enabled ? 'border-primary/30 bg-primary/5' : 'border-border bg-secondary/30'}`}>
@@ -111,7 +111,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-medium text-foreground">Sandbox</span>
               </div>
               <span className={`text-[10px] mt-1 block ${health.sandbox_enabled ? 'text-primary' : 'text-muted-foreground'}`}>
-                {health.sandbox_enabled ? 'Docker ✓' : 'Disabled'}
+                {health.sandbox_enabled ? <span className="flex items-center gap-1">Docker <Check className="h-2.5 w-2.5" /></span> : 'Disabled'}
               </span>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function SettingsPage() {
                 {LLM_PROVIDERS.map(p => (
                   <button key={p.id} onClick={() => setProvider(p.id)} className={`p-3 rounded-lg border text-left transition-all ${provider === p.id ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border hover:border-border/80 bg-secondary/30'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span>{p.icon}</span>
+                      <p.Icon className={`h-3.5 w-3.5 ${provider === p.id ? 'text-primary' : 'text-muted-foreground'}`} />
                       <span className="text-xs font-medium text-foreground">{p.label}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">{p.desc}</p>
