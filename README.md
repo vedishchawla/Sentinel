@@ -197,4 +197,3 @@ Sentinel/
 
 ---
 
-*Built by Vedish Chawla*
