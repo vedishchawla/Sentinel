@@ -1,101 +1,200 @@
 # Sentinel — Autonomous Incident-to-Fix Engineering Agent
 
-**Team:** Code Paglus | **Hackathon:** Syrus 2026
-
-## Problem Statement & Track
-
-**Track:** Track 1 — Agentic AI [Rezinix AI]
-
-**Problem Statement:** PS-02 — Autonomous Incident-to-Fix Engineering Agent
-
-> Build an Agentic Engineering Platform that autonomously resolves software incidents — from interpreting natural language tickets to applying verified fixes and generating production-ready changes.
-
-**Target Repository:** [Rezinix-AI/shopstack-platform](https://github.com/Rezinix-AI/shopstack-platform)
+> An AI-powered engineering agent that autonomously resolves software incidents — from interpreting natural language tickets to applying verified fixes and generating production-ready pull requests.
 
 ---
 
-## 🔗 Links
+## ✨ What It Does
 
-- **PPT:** [View Presentation](https://www.canva.com/design/DAHD6M28dcg/3vJFaGACt_xKDyxK6zZGxg/view?utm_content=DAHD6M28dcg&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hd7ac8d0fb8#5)
-- **Video Demo:** [Watch Video](https://drive.google.com/file/d/1im4f4QB5FNfkimdd7uKNqqiBfIlzX1ql/view?usp=sharing)
-  > 📌 *For best quality, download the video instead of streaming in Google Drive preview.*
+Sentinel takes a bug report or incident description and autonomously:
+
+1. 🧠 **Understands** the ticket — extracts error type, affected module, severity
+2. 🔍 **Analyzes** the codebase — clones the repo, maps file structure, finds relevant files
+3. 🎯 **Detects** root cause — reads source code, identifies the exact bug pattern
+4. 🛠️ **Generates** a fix — creates a minimal, safe patch
+5. 🧪 **Creates** tests — generates regression tests for the fix
+6. 📦 **Validates** in sandbox — runs tests in isolated Docker containers
+7. ✅ **Verifies** everything — syntax, linting, full test suite
+8. 🔀 **Opens a PR** — creates a branch and pull request on GitHub
+
+All with **zero human intervention** required.
 
 ---
 
-## Overview
+## 🚀 Quick Start
 
-Sentinel is an autonomous engineering agent that parses natural language incident tickets, analyzes codebases to detect root causes, applies minimal safe fixes, validates them in sandboxed environments, and generates structured resolution reports — all with minimal human involvement.
+### Prerequisites
+- Node.js 18+ (frontend)
+- Python 3.9+ (backend)
+- Docker Desktop (optional, for sandbox testing)
+- [Groq API key](https://console.groq.com) (free)
 
-### Key Features
+### 1. Clone & Setup
 
-- 🧠 **Incident Understanding** — Interprets tickets from Jira/Slack, extracts error type, affected components, environment, and relevant commits
-- 🔍 **Codebase Analysis** — Detects logical errors, dependency conflicts, configuration issues, and identifies relevant stack traces
-- 📚 **Research & Knowledge Retrieval** — Retrieves documentation and error references when root cause is unclear
-- 🛠️ **Autonomous Fix Application** — Applies safe, minimal fixes to code, configs, and dependencies with verified patches
-- 🧪 **Validation & Testing** — Generates test cases, runs test suites in sandboxed environments, prevents regressions
-- 📊 **Resolution Reporting** — Generates structured reports with root cause analysis, changes made, validation results, and confidence score
-- 🔀 **GitHub PR Automation** — Auto-creates branches and pull requests
+```bash
+git clone https://github.com/vedishchawla/Sentinel.git
+cd Sentinel
+```
 
-### Tech Stack
+### 2. Backend
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Configure
+cp .env.example .env
+# Edit .env and add your Groq API key (free from console.groq.com)
+
+# Run
+python main.py
+```
+
+The backend runs at `http://localhost:8000`.
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs at `http://localhost:8080`.
+
+### 4. Open & Use
+
+1. Go to `http://localhost:8080`
+2. Click **Dashboard**
+3. Describe an incident or load a sample
+4. Enter a GitHub repo URL
+5. Click **Run Autonomous Fix**
+6. Watch the AI work in real-time 🎬
+
+---
+
+## 🏗️ Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    Frontend (React/Vite)                   │
+│  Landing Page ─── Dashboard ─── Settings ─── History      │
+│       │               │              │                    │
+│       │          WebSocket       REST API                 │
+└───────┼───────────────┼──────────────┼────────────────────┘
+        │               │              │
+┌───────┼───────────────┼──────────────┼────────────────────┐
+│       │          FastAPI Server (Python)                   │
+│       │               │              │                    │
+│  ┌────┴───────────────┴──────────────┴────────────────┐   │
+│  │              Agent Orchestrator                     │   │
+│  │                                                     │   │
+│  │  Ticket Parser ──► Codebase Analyzer ──► Root Cause │   │
+│  │       │                    │                  │      │   │
+│  │       ▼                    ▼                  ▼      │   │
+│  │  Fix Generator ──► Test Generator ──► Sandbox Runner│   │
+│  │       │                    │                  │      │   │
+│  │       ▼                    ▼                  ▼      │   │
+│  │              PR Creator (GitHub API)                 │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                            │
+│  Services: GitHub API │ Docker Sandbox │ SQLite Storage    │
+└────────────────────────────────────────────────────────────┘
+        │                    │
+        ▼                    ▼
+   GitHub API          Docker Engine
+  (clone, PR)        (isolated testing)
+```
+
+---
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React, TypeScript, Vite, Tailwind CSS, Framer Motion |
 | UI Components | shadcn/ui, Lucide Icons |
-| Backend | Python, LangChain, OpenAI GPT |
+| Backend | Python, FastAPI, LangChain |
+| LLM | Groq (Llama 3.3 70B) — free, with OpenAI/Anthropic/Ollama options |
 | Sandbox | Docker (isolated build/test execution) |
-| Integration | GitHub API (branch + PR creation) |
-| Target Repo | [shopstack-platform](https://github.com/Rezinix-AI/shopstack-platform) |
+| Storage | SQLite (incident history) |
+| Integration | GitHub API (repo analysis + PR creation) |
+| Communication | WebSocket (real-time pipeline streaming) |
 
 ---
 
-## Getting Started
+## ⚙️ Configuration
 
-```bash
-# Install dependencies
-npm install
+All settings can be configured via:
+- **Settings UI** — `http://localhost:8080/settings`
+- **Environment variables** — `backend/.env`
 
-# Run development server
-npm run dev
-```
+### LLM Providers
 
-The app runs at `http://localhost:8080`.
+| Provider | Cost | Setup |
+|----------|------|-------|
+| **Groq** (default) | Free | Get key at [console.groq.com](https://console.groq.com) |
+| OpenAI | Paid | `SENTINEL_OPENAI_API_KEY` |
+| Anthropic | Paid | `SENTINEL_ANTHROPIC_API_KEY` |
+| Ollama | Free (local) | Install Ollama, no key needed |
 
----
+### Optional Features
 
-## Project Structure
-
-```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── landing/        # Cinematic scroll-driven landing page scenes
-│   │   ├── ui/             # shadcn/ui component library
-│   │   ├── InteractiveGrid.tsx   # Canvas-based mouse-reactive grid
-│   │   ├── CursorGlow.tsx        # Cursor-following radial glow effect
-│   │   └── ...             # Dashboard panel components
-│   ├── pages/
-│   │   ├── Landing.tsx     # Landing page (scroll-driven)
-│   │   ├── Index.tsx       # Dashboard page
-│   │   ├── Incidents.tsx   # Incident history
-│   │   └── NotFound.tsx    # 404 page
-│   ├── hooks/              # Custom React hooks
-│   └── index.css           # Global styles + Tailwind config
-├── index.html
-├── tailwind.config.ts
-└── package.json
-```
+- **GitHub Token** — Enable automatic PR creation (`SENTINEL_GITHUB_TOKEN`)
+- **Docker Sandbox** — Run tests in isolation (`SENTINEL_SANDBOX_ENABLED=true`)
 
 ---
 
+## 📁 Project Structure
+
+```
+Sentinel/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── landing/        # Cinematic scroll-driven landing page
+│   │   │   ├── ui/             # shadcn/ui component library
+│   │   │   └── ...             # Dashboard panel components
+│   │   ├── pages/
+│   │   │   ├── Landing.tsx     # Landing page
+│   │   │   ├── Index.tsx       # Dashboard
+│   │   │   ├── Settings.tsx    # Configuration
+│   │   │   └── Incidents.tsx   # History
+│   │   ├── hooks/
+│   │   │   ├── useAgentWorkflow.ts  # Pipeline state management
+│   │   │   └── useWebSocket.ts      # Real-time backend connection
+│   │   └── lib/
+│   │       └── api.ts          # REST API client
+│   └── package.json
+│
+├── backend/
+│   ├── main.py                 # FastAPI server
+│   ├── config.py               # Settings management
+│   ├── agent/
+│   │   ├── orchestrator.py     # Pipeline orchestrator
+│   │   └── steps/              # 7 autonomous agent steps
+│   ├── models/                 # Pydantic data models
+│   ├── services/
+│   │   ├── github_service.py   # GitHub API wrapper
+│   │   └── storage.py          # SQLite persistence
+│   └── requirements.txt
+│
+└── README.md
+```
+
+---
 
 ## ✨ Key Highlights
 
-- **Fully Autonomous** — No human intervention required from ticket to PR
-- **Transparent Reasoning** — Every agent decision is visible in the Reasoning Panel
-- **Safe by Design** — Minimal patches, Docker-sandboxed validation, regression-free
-- **Production-Ready Output** — Clean PRs with commit messages, test files, and resolution reports
+- **Fully Autonomous** — No human intervention from ticket to PR
+- **Real-Time Streaming** — Watch the agent think, analyze, and fix via WebSocket
+- **Transparent Reasoning** — Every agent decision visible in the Reasoning Panel
+- **Safe by Design** — Minimal patches, Docker-sandboxed validation
+- **Free to Run** — Groq's free LLM tier, no credit card needed
+- **Production-Ready Output** — Clean PRs with commit messages, tests, and reports
 
 ---
 
-*Built with ❤️ by Team Code Paglus for Syrus 2026 Hackathon*
+*Built by Vedish Chawla*
