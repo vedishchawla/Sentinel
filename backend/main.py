@@ -3,10 +3,13 @@ Sentinel Backend — FastAPI server with WebSocket streaming and REST API.
 """
 
 import json
+import time
 import asyncio
+import logging
+from collections import defaultdict
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -17,6 +20,19 @@ from models.incident import IncidentCreate
 from services.storage import StorageService
 from agent.orchestrator import Orchestrator
 
+# Structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("sentinel")
+
+# Simple in-memory rate limiter (30 requests/minute per IP)
+RATE_LIMIT = 30
+RATE_WINDOW = 60
+_rate_store: dict[str, list[float]] = defaultdict(list)
+
 
 # ─── Lifespan ───
 @asynccontextmanager
@@ -25,10 +41,10 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     storage = StorageService(db_path=settings.db_path)
     await storage.initialize()
-    print(f"✓ Sentinel backend started on {settings.host}:{settings.port}")
-    print(f"  LLM Provider: {settings.llm_provider}")
-    print(f"  Sandbox: {'enabled' if settings.sandbox_enabled else 'disabled'}")
-    print(f"  GitHub: {'configured' if settings.github_token else 'not configured'}")
+    logger.info("Sentinel backend started on %s:%s", settings.host, settings.port)
+    logger.info("LLM Provider: %s", settings.llm_provider)
+    logger.info("Sandbox: %s", "enabled" if settings.sandbox_enabled else "disabled")
+    logger.info("GitHub: %s", "configured" if settings.github_token else "not configured")
     yield
 
 
@@ -38,6 +54,8 @@ app = FastAPI(
     description="Autonomous Incident-to-Fix Engineering Agent",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # CORS
@@ -49,6 +67,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Simple rate limiter: 30 requests/minute per client IP."""
+    if request.url.path.startswith("/docs") or request.url.path.startswith("/openapi") or request.url.path.startswith("/redoc"):
+        return await call_next(request)
+
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+
+    # Clean old entries
+    _rate_store[client_ip] = [t for t in _rate_store[client_ip] if now - t < RATE_WINDOW]
+
+    if len(_rate_store[client_ip]) >= RATE_LIMIT:
+        logger.warning("Rate limit exceeded for %s", client_ip)
+        return Response(
+            content=json.dumps({"detail": "Rate limit exceeded. Try again later."}),
+            status_code=429,
+            media_type="application/json",
+        )
+
+    _rate_store[client_ip].append(now)
+    response = await call_next(request)
+    return response
+
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log every request with timing."""
+    start = time.time()
+    response = await call_next(request)
+    duration = (time.time() - start) * 1000
+    logger.info("%s %s %s %.0fms", request.method, request.url.path, response.status_code, duration)
+    return response
 
 
 # ─── WebSocket: Pipeline Execution ───
@@ -90,7 +145,7 @@ async def pipeline_websocket(websocket: WebSocket):
         await orchestrator.run(description, repo_url, environment, send_message)
 
     except WebSocketDisconnect:
-        print("Client disconnected from pipeline WebSocket")
+        logger.info("Client disconnected from pipeline WebSocket")
     except json.JSONDecodeError:
         await websocket.send_json({
             "type": "error",
