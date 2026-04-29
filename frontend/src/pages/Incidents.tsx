@@ -1,31 +1,37 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
-import { ArrowLeft, CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
-
-interface Incident {
-  id: string;
-  errorType: string;
-  module: string;
-  status: 'resolved' | 'in_progress' | 'failed';
-  resolutionTime: string;
-}
-
-const INCIDENTS: Incident[] = [
-  { id: 'ISSUE-402', errorType: 'Memory Leak', module: 'auth/middleware', status: 'resolved', resolutionTime: '3m 42s' },
-  { id: 'ISSUE-389', errorType: 'Race Condition', module: 'billing/payment', status: 'resolved', resolutionTime: '5m 18s' },
-  { id: 'ISSUE-415', errorType: 'SQL Injection', module: 'api/search', status: 'resolved', resolutionTime: '2m 55s' },
-  { id: 'ISSUE-423', errorType: 'Null Reference', module: 'orders/checkout', status: 'in_progress', resolutionTime: '—' },
-  { id: 'ISSUE-430', errorType: 'Deadlock', module: 'inventory/sync', status: 'failed', resolutionTime: '—' },
-];
+import { ArrowLeft, CheckCircle, Clock, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { fetchIncidents, type IncidentSummary } from '@/lib/api';
 
 const STATUS_CONFIG = {
   resolved: { icon: CheckCircle, label: 'Resolved', cls: 'text-primary bg-primary/10' },
   in_progress: { icon: Loader2, label: 'In Progress', cls: 'text-blue-400 bg-blue-400/10' },
   failed: { icon: XCircle, label: 'Failed', cls: 'text-destructive bg-destructive/10' },
+  pending: { icon: Clock, label: 'Pending', cls: 'text-muted-foreground bg-muted/10' },
 };
 
 export default function Incidents() {
   const navigate = useNavigate();
+  const [incidents, setIncidents] = useState<IncidentSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await fetchIncidents(50, 0);
+        setIncidents(data.incidents);
+        setTotal(data.total);
+      } catch (e: any) {
+        setError(e.message || 'Failed to fetch incidents');
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -38,39 +44,60 @@ export default function Incidents() {
 
         <div className="mb-6">
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Incident History</h1>
-          <p className="text-xs text-muted-foreground mt-1">Previous incidents resolved by Sentinel.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {total > 0 ? `${total} incident(s) resolved by Sentinel.` : 'No incidents yet. Run your first fix from the dashboard.'}
+          </p>
         </div>
 
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-[100px_1fr_1fr_140px_100px] gap-4 px-4 py-2.5 border-b border-border bg-secondary/30 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            <span>ID</span>
-            <span>Error Type</span>
-            <span>Module</span>
-            <span>Status</span>
-            <span className="text-right">Resolution</span>
+        {loading ? (
+          <div className="flex items-center justify-center h-40">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-          {INCIDENTS.map((inc) => {
-            const cfg = STATUS_CONFIG[inc.status];
-            const Icon = cfg.icon;
-            return (
-              <div key={inc.id} className="grid grid-cols-[100px_1fr_1fr_140px_100px] gap-4 px-4 py-3 border-b border-border last:border-0 hover:bg-secondary/20 transition-colors items-center">
-                <span className="text-xs font-mono text-foreground">{inc.id}</span>
-                <span className="text-xs text-foreground">{inc.errorType}</span>
-                <span className="text-xs font-mono text-muted-foreground">{inc.module}</span>
-                <div className="flex items-center gap-1.5">
-                  <div className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${cfg.cls}`}>
-                    <Icon className={`h-3 w-3 ${inc.status === 'in_progress' ? 'animate-spin' : ''}`} />
-                    {cfg.label}
+        ) : error ? (
+          <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <span className="text-xs text-destructive">{error}</span>
+          </div>
+        ) : incidents.length === 0 ? (
+          <div className="text-center py-16">
+            <AlertCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">No incidents yet</p>
+            <button onClick={() => navigate('/dashboard')} className="mt-4 text-xs text-primary hover:underline">
+              Go to Dashboard →
+            </button>
+          </div>
+        ) : (
+          <div className="border border-border rounded-lg overflow-hidden">
+            <div className="grid grid-cols-[90px_1fr_1fr_130px_100px] gap-4 px-4 py-2.5 border-b border-border bg-secondary/30 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              <span>ID</span>
+              <span>Error Type</span>
+              <span>Repository</span>
+              <span>Status</span>
+              <span className="text-right">Confidence</span>
+            </div>
+            {incidents.map((inc) => {
+              const status = inc.status as keyof typeof STATUS_CONFIG;
+              const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+              const Icon = cfg.icon;
+              return (
+                <div key={inc.id} className="grid grid-cols-[90px_1fr_1fr_130px_100px] gap-4 px-4 py-3 border-b border-border last:border-0 hover:bg-secondary/20 transition-colors items-center">
+                  <span className="text-xs font-mono text-foreground">{inc.id}</span>
+                  <span className="text-xs text-foreground truncate">{inc.error_type || 'Unknown'}</span>
+                  <span className="text-xs font-mono text-muted-foreground truncate">{inc.repo_url?.split('github.com/')[1] || inc.repo_url}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${cfg.cls}`}>
+                      <Icon className={`h-3 w-3 ${status === 'in_progress' ? 'animate-spin' : ''}`} />
+                      {cfg.label}
+                    </div>
                   </div>
+                  <span className="text-xs font-mono text-muted-foreground text-right">
+                    {inc.confidence ? `${inc.confidence}%` : '—'}
+                  </span>
                 </div>
-                <span className="text-xs font-mono text-muted-foreground text-right flex items-center justify-end gap-1">
-                  {inc.resolutionTime !== '—' && <Clock className="h-3 w-3" />}
-                  {inc.resolutionTime}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

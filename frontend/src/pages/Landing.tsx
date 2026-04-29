@@ -13,10 +13,16 @@ export default function Landing() {
       <CursorGlow />
       <Navbar />
       <SceneHero />
-      <SceneStruggle />
+      <div id="features">
+        <SceneStruggle />
+      </div>
       <SceneReveal />
-      <ScenePipeline />
-      <SceneCTA />
+      <div id="pipeline">
+        <ScenePipeline />
+      </div>
+      <div id="demo">
+        <SceneCTA />
+      </div>
       <footer className="py-12 text-center border-t border-border/40">
         <div className="flex items-center justify-center gap-2 mb-3">
           <Activity className="h-4 w-4 text-primary" />

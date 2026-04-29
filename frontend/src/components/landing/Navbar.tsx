@@ -3,13 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { Activity } from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Features", href: "#pipeline" },
-  { label: "How It Works", href: "#how" },
-  { label: "Architecture", href: "#arch" },
+  { label: "Features", href: "#features" },
+  { label: "Pipeline", href: "#pipeline" },
+  { label: "Demo", href: "#demo" },
 ];
 
 export const Navbar = () => {
   const navigate = useNavigate();
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const target = document.querySelector(href);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <motion.nav
@@ -30,6 +38,7 @@ export const Navbar = () => {
           <a
             key={link.href}
             href={link.href}
+            onClick={(e) => handleNavClick(e, link.href)}
             className="relative text-sm font-medium text-muted-foreground tracking-wide hover:text-foreground transition-colors duration-200 group"
           >
             {link.label}
