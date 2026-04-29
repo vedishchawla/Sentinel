@@ -79,29 +79,29 @@ The frontend runs at `http://localhost:8080`.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Frontend (React/Vite)                   │
-│  Landing Page ─── Dashboard ─── Settings ─── History      │
-│       │               │              │                    │
-│       │          WebSocket       REST API                 │
-└───────┼───────────────┼──────────────┼────────────────────┘
+│                    Frontend (React/Vite)                 │
+│  Landing Page ─── Dashboard ─── Settings ─── History     │
+│       │               │              │                   │
+│       │          WebSocket       REST API                │
+└───────┼───────────────┼──────────────┼───────────────────┘
         │               │              │
 ┌───────┼───────────────┼──────────────┼────────────────────┐
-│       │          FastAPI Server (Python)                   │
+│       │          FastAPI Server (Python)                  │
 │       │               │              │                    │
 │  ┌────┴───────────────┴──────────────┴────────────────┐   │
-│  │              Agent Orchestrator                     │   │
-│  │                                                     │   │
-│  │  Ticket Parser ──► Codebase Analyzer ──► Root Cause │   │
-│  │       │                    │                  │      │   │
-│  │       ▼                    ▼                  ▼      │   │
-│  │  Fix Generator ──► Test Generator ──► Sandbox Runner│   │
-│  │       │                    │                  │      │   │
-│  │       ▼                    ▼                  ▼      │   │
-│  │              PR Creator (GitHub API)                 │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                            │
-│  Services: GitHub API │ Docker Sandbox │ SQLite Storage    │
-└────────────────────────────────────────────────────────────┘
+│  │              Agent Orchestrator                    │   │
+│  │                                                    │   │
+│  │  Ticket Parser ──► Codebase Analyzer ──► Root Cause│   │
+│  │       │                    │                  │    │   │
+│  │       ▼                    ▼                  ▼    │   │
+│  │  Fix Generator ──►Test Generator ──► Sandbox Runner│   │
+│  │       │                    │                  │    │   │
+│  │       ▼                    ▼                  ▼    │   │
+│  │              PR Creator (GitHub API)               │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                           │
+│  Services: GitHub API │ Docker Sandbox │ SQLite Storage   │
+└───────────────────────────────────────────────────────────┘
         │                    │
         ▼                    ▼
    GitHub API          Docker Engine
