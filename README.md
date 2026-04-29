@@ -4,24 +4,24 @@
 
 ---
 
-## ✨ What It Does
+## What It Does
 
 Sentinel takes a bug report or incident description and autonomously:
 
-1. 🧠 **Understands** the ticket — extracts error type, affected module, severity
-2. 🔍 **Analyzes** the codebase — clones the repo, maps file structure, finds relevant files
-3. 🎯 **Detects** root cause — reads source code, identifies the exact bug pattern
-4. 🛠️ **Generates** a fix — creates a minimal, safe patch
-5. 🧪 **Creates** tests — generates regression tests for the fix
-6. 📦 **Validates** in sandbox — runs tests in isolated Docker containers
-7. ✅ **Verifies** everything — syntax, linting, full test suite
-8. 🔀 **Opens a PR** — creates a branch and pull request on GitHub
+1. **Understands** the ticket — extracts error type, affected module, severity
+2. **Analyzes** the codebase — clones the repo, maps file structure, finds relevant files
+3. **Detects** root cause — reads source code, identifies the exact bug pattern
+4. **Generates** a fix — creates a minimal, safe patch
+5. **Creates** tests — generates regression tests for the fix
+6. **Validates** in sandbox — runs tests in isolated Docker containers
+7. **Verifies** everything — syntax, linting, full test suite
+8. **Opens a PR** — creates a branch and pull request on GitHub
 
 All with **zero human intervention** required.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ (frontend)
@@ -71,11 +71,11 @@ The frontend runs at `http://localhost:8080`.
 3. Describe an incident or load a sample
 4. Enter a GitHub repo URL
 5. Click **Run Autonomous Fix**
-6. Watch the AI work in real-time 🎬
+6. Watch the AI work in real-time
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -110,7 +110,7 @@ The frontend runs at `http://localhost:8080`.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -125,7 +125,7 @@ The frontend runs at `http://localhost:8080`.
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 All settings can be configured via:
 - **Settings UI** — `http://localhost:8080/settings`
@@ -147,7 +147,7 @@ All settings can be configured via:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Sentinel/
@@ -186,7 +186,7 @@ Sentinel/
 
 ---
 
-## ✨ Key Highlights
+## Key Highlights
 
 - **Fully Autonomous** — No human intervention from ticket to PR
 - **Real-Time Streaming** — Watch the agent think, analyze, and fix via WebSocket
@@ -194,6 +194,6 @@ Sentinel/
 - **Safe by Design** — Minimal patches, Docker-sandboxed validation
 - **Free to Run** — Groq's free LLM tier, no credit card needed
 - **Production-Ready Output** — Clean PRs with commit messages, tests, and reports
+- **API Documentation** — Interactive Swagger docs at `/docs`
 
 ---
-
